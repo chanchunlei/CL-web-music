@@ -59,6 +59,9 @@ export default memo(function CLTopBanner() {
           <button className="btn right" onClick={e => bannerRef.current.next()}></button>
         </BannerControl>
       </div>
+
+      
     </BannerWrapper>
   )
 })
+
