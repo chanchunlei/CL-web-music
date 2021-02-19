@@ -47,7 +47,7 @@ display: flex;
     display: block;
     width: 50px;
     height: 45px;
-    background-image: url(${require("@/assets/img/sprite_footer_02.png")});
+    background-image: url(${require("@/assets/img/sprite_footer_02.png").default});
     background-size: 110px 450px;
   }
 
@@ -69,7 +69,7 @@ display: flex;
     display: block;
     width: 52px;
     height: 10px;
-    background-image: url(${require("@/assets/img/sprite_footer_01.png")});
+    background-image: url(${require("@/assets/img/sprite_footer_01.png").default});
     background-size: 180px 100px;
   }
 

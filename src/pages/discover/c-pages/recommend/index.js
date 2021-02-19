@@ -1,7 +1,9 @@
 import React, { memo } from 'react';
 
-import HYTopBanner from './c-cpns/top-banner';
-import CLHotRecommend from './c-cpns/hot-recommend'
+import CLTopBanner from './c-cpns/top-banner';
+import CLHotRecommend from './c-cpns/hot-recommend';
+import CLNewAlbum from './c-cpns/new-album';
+import CLRecommendRanking from './c-cpns/recommend-ranking';
 import { 
   RecommendWrapper,
   Content,
@@ -13,10 +15,12 @@ function CLRecommend(props) {
   
   return (
     <RecommendWrapper>
-      <HYTopBanner/>
+      <CLTopBanner/>
       <Content className="wrap-v2">
         <RecommendLeft>
           <CLHotRecommend />
+          <CLNewAlbum />
+          <CLRecommendRanking/>
         </RecommendLeft>
         <RecommendRight>
           
