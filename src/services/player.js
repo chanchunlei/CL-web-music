@@ -1,0 +1,19 @@
+import request from './request';
+
+export function getSongDetail(ids) {
+  return request({
+    url: "/song/detail",
+    params: {
+      ids
+    }
+  })
+}
+
+export function getPlayList(id) {
+  return request({
+    url: '/simi/playlist',
+    params: {
+      id
+    }
+  })
+}
