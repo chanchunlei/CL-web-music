@@ -1,5 +1,5 @@
-import * as actionTypes from './actionTypes';
 import { Map } from 'immutable';
+import * as actionTypes from './actionTypes';
 const defaultState = Map({
   currentSong: {},
   playList: [
@@ -208,7 +208,8 @@ const defaultState = Map({
   ],
   currentLyrics: [],
   currentLyricIndex: -1,
-  currentSongIndex: -1
+  currentSongIndex: -1,
+  playSequence: 0, // 0 顺序播放 1 随机播放 2 单曲循环
 
 })
 const reducer = (state = defaultState, action) => {
@@ -219,6 +220,10 @@ const reducer = (state = defaultState, action) => {
       return state.set("currentLyrics", action.lyrics);
     case actionTypes.CHANGE_CURRENT_SONG_INDEX:
       return state.set("currentSongIndex", action.index);
+    case actionTypes.CHANGE_CURRENT_LYRIC_INDEX:
+      return state.set("currentLyricIndex", action.index);
+    case actionTypes.CHANGE_PLAY_SEQUENCE:
+      return state.set("playSequence", action.sequence);
     default : 
       return state;
   }

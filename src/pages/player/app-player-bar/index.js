@@ -1,10 +1,15 @@
 import React, { memo, useState, useCallback, useRef, useEffect } from 'react';
 import { useDispatch, useSelector, shallowEqual} from 'react-redux';
 
-import { getSongDetailAction } from '../store/actionCreators';
+import { 
+  getSongDetailAction,
+  changePlaySongAction,
+  changePlaySequenceAction,
+  changeCurrentLyricIndexAction
+} from '../store/actionCreators';
 
 import { NavLink } from 'react-router-dom';
-import { Slider } from 'antd';
+import { Slider, message } from 'antd';
 import CLAppPlayPanel from '../app-play-panel';
 
 import { getPlayUrl, formatMinuteSecond } from '@/utils/format-utils';
@@ -22,11 +27,15 @@ export default memo(function CLAppPlayBar() {
   const [progress, setProgress] = useState(0);      //进度条
   const [isChanging, setIsChanging] = useState(false); //优化拖动
   
-  const [showPanel, setShowPanel] = useState(false);
+  const [showPanel, setShowPanel] = useState(false);  //modal显示
 
 
-  const { currentSong } = useSelector(state => ({
-    currentSong: state.getIn(["player", "currentSong"])
+  const { currentSong, playList, playSequence, currentLyrics, currentLyricIndex } = useSelector(state => ({
+    currentSong: state.getIn(["player", "currentSong"]),
+    currentLyrics: state.getIn(["player", "currentLyrics"]),
+    currentLyricIndex: state.getIn(["player", "currentLyricIndex"]),
+    playList: state.getIn(["player", "playList"]),
+    playSequence: state.getIn(["player", "playSequence"])
   }), shallowEqual);
   const dispatch = useDispatch();
   
@@ -38,6 +47,7 @@ export default memo(function CLAppPlayBar() {
   useEffect(() => { //currentSong改变
     // console.log(currentSong)
     audioRef.current.src = getPlayUrl(currentSong.id);
+    audioRef.current.pause();
     audioRef.current.play().then(res => {
       setIsPlaying(true);
     }).catch(e => {
@@ -52,15 +62,44 @@ export default memo(function CLAppPlayBar() {
       setIsPlaying(false);
     });
   }, [isPlaying]);
-
+  
   const timeUpdate = (e) => { //歌曲时间改变
     const currentTime = e.target.currentTime;
     if (!isChanging) {  //判断是否在拖动中，优化跟手
       setCurrentTime(currentTime); //显示播放时间
       setProgress((currentTime * 1000) / duration * 100);
     }
-    console.log(currentTime);
     
+    let lrcLength = currentLyrics.length;
+    let i=0;
+    for(; i<lrcLength; i++) {
+      const lrcTime = currentLyrics[i].time;
+      if (currentTime * 1000 < lrcTime) {
+        break
+      }
+    }
+    const finalIndex = i - 1;
+    if (finalIndex !== currentLyricIndex) { 
+      dispatch(changeCurrentLyricIndexAction(finalIndex));
+      //key定义唯一防止重复
+      //同时是className的前戳
+      message.open({
+        content: currentLyrics[finalIndex].content,
+        duration: 0,
+        key: 'lyric',
+        className: 'lyric-message',
+      })
+    }
+
+  };
+
+  const tiemEnded = (e) => {
+    if(playSequence === 2 || playList.length === 1) {
+      audioRef.current.currentTime = 0;
+      audioRef.current.play();
+    }else {
+      dispatch(changePlaySongAction(1));
+    }
   }
 
   const sliderChange= useCallback((value) => { //更新播放时间
@@ -83,9 +122,9 @@ export default memo(function CLAppPlayBar() {
     <PlaybarWrapper className="sprite_playbar">
       <div className="content wrap-2">
         <Control isPlaying={isPlaying}>
-          <button className="sprite_playbar btn prev" ></button>
+          <button className="sprite_playbar btn prev" onClick={e => dispatch(changePlaySongAction(-1))}></button>
           <button className="sprite_playbar btn play" onClick={e=> play()}></button>
-          <button className="sprite_playbar btn next"></button>
+          <button className="sprite_playbar btn next" onClick={e => dispatch(changePlaySongAction(1))}></button>
         </Control>
         <PlayInfo>
           <div className="image">
@@ -108,21 +147,21 @@ export default memo(function CLAppPlayBar() {
             </div>
           </div>
         </PlayInfo>
-        <Operator>
+        <Operator sequence={playSequence}>
           <div className="left">
             <button className="sprite_playbar btn favor"></button>
             <button className="sprite_playbar btn share"></button>
           </div>
           <div className="right sprite_playbar">
             <button className="sprite_playbar btn volume"></button>
-            <button className="sprite_playbar btn loop"></button>
+            <button className="sprite_playbar btn loop" onClick={e => dispatch(changePlaySequenceAction(playSequence+1))}></button>
             <button className="sprite_playbar btn playlist" onClick={e => setShowPanel(!showPanel)}>
-              9
+            {playList.length}
             </button>
           </div>
         </Operator>
       </div>
-      <audio ref={audioRef} onTimeUpdate={timeUpdate}/>
+      <audio ref={audioRef} onTimeUpdate={timeUpdate} onEnded={tiemEnded}/>
       {showPanel && <CLAppPlayPanel/>}
 
     </PlaybarWrapper>
